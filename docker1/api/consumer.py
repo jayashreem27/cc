@@ -14,6 +14,7 @@ def wait_for_kafka():
                 bootstrap_servers=KAFKA_BROKER,
                 auto_offset_reset="earliest",
                 enable_auto_commit=True,
+                group_id='kafka-consumer-1-group',
                 value_deserializer=lambda x: json.loads(x.decode("utf-8"))
             )
             print("✅ Kafka is available! Starting Consumer...")
