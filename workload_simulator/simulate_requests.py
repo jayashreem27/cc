@@ -18,7 +18,7 @@ def generate_log_message(level: str) -> str:
     return messages.get(level, f"Log event: {level}")
 
 def simulate_requests():
-    while True:
+    for _ in range(20):
         level = random.choice(LEVELS)
         message = generate_log_message(level)
         
