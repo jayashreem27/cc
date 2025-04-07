@@ -10,13 +10,13 @@ def get_kafka_producer():
     retries = 10
     while retries > 0:
         try:
-            print(f"Connecting to Kafka at {KAFKA_SERVER}...")
+            print(f"Connecting to Kafka at {KAFKA_SERVER}...", flush=True)
             return KafkaProducer(
                 bootstrap_servers=KAFKA_SERVER,
                 value_serializer=lambda v: json.dumps(v).encode("utf-8")
             )
         except Exception as e:
-            print(f"Kafka connection failed: {e}. Retrying in 5 seconds... ({retries} retries left)")
+            print(f"Kafka connection failed: {e}. Retrying in 5 seconds... ({retries} retries left)", flush=True)
             time.sleep(5)
             retries -= 1
     raise Exception("Failed to connect to Kafka after multiple attempts")
@@ -27,6 +27,7 @@ def send_log(level: str, message: str):
     try:
         producer.send("logs", {"level": level, "message": message})
         producer.flush()
-        print(f"Log sent: {level} - {message}")
+        print(f"Log sent: {level} - {message}", flush=True)
     except Exception as e:
-        print(f"Failed to send log: {e}")
+        print(f"Failed to send log: {e}", flush=True)
+

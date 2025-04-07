@@ -2,9 +2,14 @@ FROM python:3.9
 
 WORKDIR /app
 
-COPY ../requirements.txt .
+# Copy the requirements file from the correct location.
+COPY ./requirements.txt .
+
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy the api package so that the package structure is preserved.
 COPY ./api /app/api
 
-CMD ["python", "/app/api/consumer.py"]
+# Run the consumer as a module to allow proper absolute imports.
+CMD ["python", "-m", "api.consumer"]
+

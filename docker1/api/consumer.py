@@ -5,9 +5,9 @@ import time
 KAFKA_BROKER = "kafka:9092"
 TOPIC = "logs"
 
-# Function to wait for Kafka to be ready
 def wait_for_kafka():
     while True:
+        print("Waiting for kafka", flush=True)
         try:
             consumer = KafkaConsumer(
                 TOPIC,
@@ -17,19 +17,20 @@ def wait_for_kafka():
                 group_id='kafka-consumer-1-group',
                 value_deserializer=lambda x: json.loads(x.decode("utf-8"))
             )
-            print("✅ Kafka is available! Starting Consumer...")
+            print("✅ Kafka is available! Starting Consumer...", flush=True)
             return consumer
         except Exception as e:
-            print(f"⏳ Waiting for Kafka... Error: {e}")
-            time.sleep(5)  # Retry after 5 seconds
+            print(f"⏳ Waiting for Kafka... Error: {e}", flush=True)
+            time.sleep(5)
 
-# Initialize Kafka Consumer when Kafka is ready
 consumer = wait_for_kafka()
+print("Started Kafka", flush=True)
 
 def consume_logs():
-    print("Listening for messages...")
+    print("Listening for messages...", flush=True)
     for message in consumer:
-        print(f"Received log: {message.value}")
+        print(f"Received log: {message.value}", flush=True)
 
 if __name__ == "__main__":
     consume_logs()
+
