@@ -1,5 +1,15 @@
-url: mysql-db:3306
-user: loguser
-database: logsdb
-secureJsonData:
-  password: logpass
+apiVersion: 1
+
+datasources:
+  - name: MySQL
+    type: mysql
+    uid: mysql
+    access: proxy
+    url: mysql-db:3306
+    user: loguser
+    database: logsdb
+    isDefault: true
+    secureJsonData:
+      password: logpass
+    jsonData:
+      tlsSkipVerify: true
