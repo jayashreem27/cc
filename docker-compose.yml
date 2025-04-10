@@ -49,10 +49,15 @@ services:
     container_name: kafka-consumer-1
     depends_on:
       - kafka
+      - mysql
     environment:
       KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
       KAFKA_TOPIC: "logs"
       KAFKA_GROUP_ID: "log-consumer-group"
+      MYSQL_HOST: "mysql-db"
+      MYSQL_USER: "loguser"
+      MYSQL_PASSWORD: "logpass"
+      MYSQL_DATABASE: "logsdb"
     volumes:
       - ./docker1:/app
     working_dir: /app
@@ -70,3 +75,21 @@ services:
       KAFKA_CLUSTERS_0_NAME: "local-cluster"
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: "kafka:9092"
     restart: unless-stopped
+
+  mysql:
+    image: mysql:8
+    container_name: mysql-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: logsdb
+      MYSQL_USER: loguser
+      MYSQL_PASSWORD: logpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker1/mysql-init:/docker-entrypoint-initdb.d
+
+volumes:
+  mysql_data:
