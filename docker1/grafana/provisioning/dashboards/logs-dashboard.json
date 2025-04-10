@@ -1,0 +1,37 @@
+{
+  "id": null,
+  "uid": "log-mysql-dashboard",
+  "title": "MySQL Log Dashboard",
+  "timezone": "browser",
+  "editable": true,
+  "panels": [
+    {
+      "type": "table",
+      "title": "Recent Logs",
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 10 },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "datasource": {
+            "type": "mysql",
+            "uid": "mysql"
+          },
+          "rawSql": "SELECT timestamp, level, message FROM logs ORDER BY timestamp DESC LIMIT 100;",
+          "intervalMs": 1000,
+          "maxDataPoints": 100
+        }
+      ],
+      "options": {
+        "showHeader": true
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      }
+    }
+  ],
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "30s"
+}

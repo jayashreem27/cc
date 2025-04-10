@@ -91,5 +91,21 @@ services:
       - mysql_data:/var/lib/mysql
       - ./docker1/mysql-init:/docker-entrypoint-initdb.d
 
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mysql
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./docker1/grafana/provisioning:/etc/grafana/provisioning
+    restart: unless-stopped
+
 volumes:
   mysql_data:
+  grafana_data:

@@ -1,0 +1,5 @@
+url: mysql-db:3306
+user: loguser
+database: logsdb
+secureJsonData:
+  password: logpass
