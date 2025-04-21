@@ -1,74 +1,38 @@
 from kafka import KafkaConsumer
+from kafka.errors import NoBrokersAvailable
 import json
-import time
 import os
-import mysql.connector
+import time
 
-KAFKA_BROKER = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092")
-TOPIC = os.getenv("KAFKA_TOPIC", "logs")
-GROUP_ID = os.getenv("KAFKA_GROUP_ID", "log-consumer-group")
+KAFKA_TOPIC = os.getenv("KAFKA_TOPIC", "prometheus_data")
+KAFKA_BOOTSTRAP_SERVERS = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092")
+KAFKA_GROUP_ID = os.getenv("KAFKA_GROUP_ID", "prometheus-consumer-group")
 
-MYSQL_HOST = os.getenv("MYSQL_HOST", "mysql-db")
-MYSQL_USER = os.getenv("MYSQL_USER", "loguser")
-MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", "logpass")
-MYSQL_DATABASE = os.getenv("MYSQL_DATABASE", "logsdb")
-
-print(f"🔍 Consumer connecting to Kafka at {KAFKA_BROKER}, Topic: {TOPIC}...")
-
-def wait_for_kafka():
-    while True:
-        try:
-            consumer = KafkaConsumer(
-                TOPIC,
-                bootstrap_servers=KAFKA_BROKER,
-                group_id=GROUP_ID,
-                auto_offset_reset="earliest",
-                enable_auto_commit=True,
-                value_deserializer=lambda x: json.loads(x.decode("utf-8"))
-            )
-            print(f"✅ Kafka is available! Connected to topic: {TOPIC}")
-            return consumer
-        except Exception as e:
-            print(f"⏳ Waiting for Kafka... Error: {e}")
-            time.sleep(5)
-
-def connect_db():
-    return mysql.connector.connect(
-        host=MYSQL_HOST,
-        user=MYSQL_USER,
-        password=MYSQL_PASSWORD,
-        database=MYSQL_DATABASE
-    )
-
-def insert_log_to_db(log):
+# Retry logic in case Kafka isn't ready yet
+consumer = None
+for attempt in range(10):
     try:
-        conn = connect_db()
-        cursor = conn.cursor()
-        query = "INSERT INTO logs (timestamp, level, message, service) VALUES (%s, %s, %s, %s)"
-        values = (
-            log.get("timestamp"),
-            log.get("level", "INFO"),
-            log.get("message"),
-            log.get("service", "unknown")
+        print(f"Attempt {attempt+1}: Connecting to Kafka at {KAFKA_BOOTSTRAP_SERVERS}...")
+        consumer = KafkaConsumer(
+            KAFKA_TOPIC,
+            bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS,
+            auto_offset_reset='earliest',
+            enable_auto_commit=True,
+            group_id=KAFKA_GROUP_ID,
+            value_deserializer=lambda m: json.loads(m.decode('utf-8'))
         )
-        cursor.execute(query, values)
-        conn.commit()
-        cursor.close()
-        conn.close()
-        print("📝 Log inserted into database.")
-    except Exception as e:
-        print(f"❌ Failed to insert log into DB: {e}")
+        print("Connected to Kafka successfully!")
+        break
+    except NoBrokersAvailable:
+        print("Kafka broker not available yet. Retrying in 5 seconds...")
+        time.sleep(5)
 
-def consume_logs():
-    print(f"📡 Listening for messages on topic '{TOPIC}'...")
-    try:
-        for message in consumer:
-            log = message.value
-            print(f"📩 Received log: {log}")
-            insert_log_to_db(log)
-    except Exception as e:
-        print(f"❌ Error in consumer: {e}")
+if consumer is None:
+    print("Failed to connect to Kafka after multiple attempts. Exiting.")
+    exit(1)
 
-if __name__ == "__main__":
-    consumer = wait_for_kafka()
-    consume_logs()
+print(f"Listening to Kafka topic: {KAFKA_TOPIC}...")
+
+for message in consumer:
+    data = message.value
+    print(f"Received metric: {data}")

@@ -1,17 +1,16 @@
-# Use official Python image
 FROM python:3.9
 
-# Set working directory inside the container
+# Set the working directory
 WORKDIR /app
 
-# Copy project files
-COPY . /app
-
 # Install dependencies
-RUN pip install --no-cache-dir fastapi uvicorn kafka-python
+RUN pip install --no-cache-dir fastapi uvicorn requests kafka-python
 
-# Expose FastAPI port
+# Copy your FastAPI code
+COPY ./api /app/api
+
+# Expose the app port
 EXPOSE 8000
 
-# Start the application
+# Start the FastAPI server
 CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
