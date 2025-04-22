@@ -4,8 +4,11 @@ from kafka import KafkaProducer
 import json
 import os
 import time
+from api.routes import router
+
 
 app = FastAPI()
+app.include_router(router)
 
 # Kafka and Prometheus configuration
 KAFKA_TOPIC = os.getenv("KAFKA_TOPIC", "prometheus_data")

@@ -1,17 +1,24 @@
-import requests
-import time
-import random
+# workload_simulator/simulate_requests.py
+import requests, time, random
 
-LEVELS = ["INFO", "WARNING", "ERROR"]
-API_URL = "http://localhost:8000/log/"
+LEVELS = ["info", "warning", "error", "debug", "custom"]
+API_URL  = "http://localhost:8000/log"   # no trailing slash
 
 def simulate_requests():
     while True:
-        level = random.choice(LEVELS)
-        message = f"Log Message - {level}"
-        response = requests.post(API_URL, params={"level": level, "message": message})
-        print(response.json())
+        lvl = random.choice(LEVELS)
+        msg = f"Auto log → {lvl}"
+        if lvl in ["info", "warning", "error", "debug"]:
+            url  = f"{API_URL}/{lvl}"
+            body = {"message": msg}
+        else:
+            url  = f"{API_URL}"
+            body = {"level": lvl, "message": msg}
+
+        resp = requests.post(url, json=body)
+        print(resp.status_code, resp.json())
         time.sleep(2)
 
-if __name__ == "__main__":
+if __name__=="__main__":
     simulate_requests()
+

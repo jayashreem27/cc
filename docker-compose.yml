@@ -44,23 +44,6 @@ services:
     command: ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
     restart: unless-stopped
 
-  consumer:
-    build:
-      context: ./docker1
-      dockerfile: Dockerfile.consumer
-    container_name: kafka-consumer-1
-    depends_on:
-      - kafka
-    environment:
-      KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
-      KAFKA_TOPIC: "prometheus_data"
-      KAFKA_GROUP_ID: "prometheus-consumer-group"
-    volumes:
-      - ./docker1:/app
-    working_dir: /app
-    command: ["python", "/app/api/consumer.py"]
-    restart: unless-stopped
-
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     container_name: kafka-ui
@@ -114,6 +97,49 @@ services:
       - /:/rootfs:ro
     ports:
       - "9100:9100"
+  mysql-db:
+    image: mysql:8.0
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: logsdb
+      MYSQL_USER: loguser
+      MYSQL_PASSWORD: logpass
+    volumes:
+      - ./docker1/mysql-init:/docker-entrypoint-initdb.d
+    ports:
+      - "3306:3306"
+    restart: unless-stopped
+
+  log-consumer:
+    build:
+      context: ./docker1
+      dockerfile: Dockerfile.consumer
+    container_name: log-consumer
+    depends_on:
+      - kafka
+      - mysql-db
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+      KAFKA_TOPIC: "logs"
+      KAFKA_GROUP_ID: "mysql-log-group"
+      MYSQL_HOST: "mysql-db"
+      MYSQL_DB: "logsdb"
+      MYSQL_USER: "loguser"
+      MYSQL_PASSWORD: "logpass"
+    volumes:
+      - ./docker1/api/consumer_logs.py:/app/api/consumer_logs.py
+      - ./docker1/wait-for-it.sh:/app/wait-for-it.sh
+    working_dir: /app
+    command:
+      - bash
+      - -c
+      - |
+        chmod +x /app/wait-for-it.sh
+        /app/wait-for-it.sh kafka:9092 -t 60 -- \
+        /app/wait-for-it.sh mysql-db:3306 -t 60 -- \
+        python /app/api/consumer_logs.py
+    restart: unless-stopped
 
 volumes:
   grafana_data:
