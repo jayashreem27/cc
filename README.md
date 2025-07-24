@@ -127,12 +127,6 @@ You can monitor:
 
 ---
 
-## 📄 License
-
-MIT License — feel free to fork, modify, and improve!
-
----
-
 ## 👩‍💻 Author
 
 Built by [Jayashree M](https://github.com/jayashreem27) — Computer Science & Cybersecurity Enthusiast 🚀
