@@ -3,6 +3,7 @@
 
 This project provides a containerized microservice-based system for simulating workloads and monitoring infrastructure using **FastAPI**, **Prometheus**, **Grafana**, and **MySQL**. It includes producer-consumer logic, automated dashboard provisioning, and simulated traffic generation to test system scalability and reliability.
 <img width="920" height="383" alt="image" src="https://github.com/user-attachments/assets/5a87eb42-f164-4a45-92eb-1253fdab7a29" />
+<img width="916" height="375" alt="image" src="https://github.com/user-attachments/assets/e36ad14d-0ce6-499a-aa4d-f386ff80c8df" />
 
 ---
 
